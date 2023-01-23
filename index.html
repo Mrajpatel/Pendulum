@@ -9,102 +9,9 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <!-- <script type="text/javascript" src="/public/test.js"></script> -->
-
-    <script>
-        // Pendulumn class
-        class Pendulum{
-            constructor(x,y,len,r,a){
-                this.origin = createVector(x,y)
-                this.point = x;
-                this.bob = createVector(0,0)
-                this.len = len
-                this.size = r
-                // PI/4 = 45 PI/3 = 60 PI/2 = 90 
-                var receivedAngle = a;
-                if(Math.abs(receivedAngle) == 0){
-                    receivedAngle = 1
-                }
-                this.angle = PI/receivedAngle
-                // this.angle = PI/2 //-Math.abs(a)
-                this.Acc = 0
-                this.aVel = 0
-                this.dragging = false
-            }
-
-
-            /**
-             * Calculates next position of pendulumn based on angle
-             * Uses downwords velocity to determine gravity
-             * 
-             * @retruns {array} - containing x and y coordinates of the pendulumn
-             */
-            update(){
-                this.bob.x = this.origin.x + this.len * sin(this.angle)
-                this.bob.y = this.origin.y + this.len * cos(this.angle)
-                this.angle+=0.02
-                this.aAcc = -(0.8/this.len) * sin(this.angle)
-                // this.angle += this.aVel
-                this.aVel += this.aAcc
-                // Apply downwords velocity force (gravity)
-                this.aVel *=0.99 
-                this.angle += this.aVel
-                
-                return [this.bob.x, this.bob.y];
-            }
-
-            /**
-             * Display pendulumn based on string length and mass (radius)
-             * 
-             * @param {string} c - color of the pendulumn
-             * @retruns {number} - index point of a pendulumn
-             */
-            display(c){
-                let co = color(c);
-                fill(co);
-                stroke(co);
-                strokeWeight(3);
-                line(this.origin.x,this.origin.y,this.bob.x,this.bob.y);
-                ellipse(this.bob.x,this.bob.y,this.size,this.size);
-                stroke(51);
-                strokeWeight(5);
-                line(100,50,window.innerWidth-100,50);
-                return this.point;
-            }
-
-            // Function to check if pendulumn is clicked
-            clicked(mx,my) {
-                let d = dist(mx, my, this.bob.x, this.bob.y);
-                if (d < this.size) {
-                    this.dragging = true;
-                }
-            }
-
-            // This tells us we are not longer clicking on the ball
-            stopDragging() {
-                if (this.dragging) {
-                    this.aVel = 0; // No velocity once you let go
-                    this.dragging = false;
-                }
-            }
-            
-            drag() {
-                // If we are draging the ball, we calculate the angle between the 
-                // pendulum origin and mouse position
-                // we assign that angle to the pendulum
-                if (this.dragging) {
-                    // Difference between 2 points
-                    let mouseV = createVector(mouseX, mouseY)
-                    let diff = createVector(0,0)
-            
-                    diff.x = this.origin.x - mouseV.x
-                    diff.y = this.origin.y - mouseV.y  
-                    // Angle relative to vertical axis
-                    this.angle = atan2(-1*diff.y, diff.x) - PI/2;  
-                }
-            }
-        }
-    </script>
+    
+    <script type="text/javascript" src="/public/setup.js"></script>
+    <script type="text/javascript" src="/public/pendulum.js"></script>
     <meta charset="utf-8" />
   </head>
 
@@ -177,6 +84,11 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        var pendulum_array = [];
+        var list = [];
+        var listTemp = [];
+        var sortedList = [];
+
         const status = document.getElementById("status");
         const messages = document.getElementById("messages");
         const cooridiates = document.getElementById("cooridiates");
@@ -229,149 +141,63 @@
                 document.getElementById("start").click();
             }
         });
-    </script>
-  </body>
-  <script>
-    var pendulum_array = [];
-    var list = [];
-    var listTemp = [];
-    
-    var sortedList = [];
-    socket.onAny((event, ...args) => {
-        sortedList = args[0];
-    });
 
-    function setup() {
-        createCanvas(window.innerWidth, 700);
-        // strokeWeight(4);
-        // stroke(51);
-        // rect(20, 20, 60, 60);
 
-        for(var i = 0; i < list.length; i++){
-            point_start = parseInt(list[i].point);
-            pendulum_array[i] = new Pendulum(point_start,50,list[i].length,list[i].mass,parseInt(list[i].angle));
-        }
-        console.log(pendulum_array);
-    }
+        socket.onAny((event, ...args) => {
+            sortedList = args[0];
+        });
 
-    function draw(){
-        background(225);
-        var position_array = [];
-        for(var i = 0; i<pendulum_array.length; i++){
-            var temp_point = pendulum_array[i].display(list[i].color);
-            pendulum_array[i].drag();
-            var position = pendulum_array[i].update();
-            position_array.push(position);
-            // var temp_point = pendulum_array[i].point();
-            for(var j = 0; j < sortedList.length; j++){
-                if(sortedList[j].point == temp_point){
-                    sortedList[j].xPosition = parseInt(position[0])+parseInt(sortedList[j].mass);
-                    sortedList[j].yPosition = parseInt(position[1])+parseInt(sortedList[j].mass);
-                }
-            }   
-        }
-        // console.log(sortedList);
+        document.getElementById('submit_form').onclick = function(){
+            document.getElementById('pendulum_view').style.display = "block";
+            
+            var name = document.getElementById('name').value;
+            var color = document.getElementById('color').value;
+            var angle = document.getElementById('angular_setoff').value;
+            var mass = document.getElementById('mass').value;
+            var length = document.getElementById('length').value;
+            var point_start = document.getElementById('point').value;
 
-        if(sortedList.length>1){
-            loop1:
-                for(var i =0;i<sortedList.length;i++){
-                    if(sortedList[i].rightNeighbor !== 0 && sortedList[i].leftNeighbor === 0){
-                        // console.log(sortedList[i].rightNeighbor);
-                        var xI = Math.round(sortedList[i].xPosition);
-                        var yI = Math.round(sortedList[i].yPosition);
-                        var xJ = Math.round(sortedList[i+1].xPosition);
-                        var yJ = Math.round(sortedList[i+1].yPosition);
-                        if(Math.abs(xI-xJ) < 17){
-                            console.log("collision on right: "+Math.abs(xI-xJ));
-                            document.getElementById("pause").click();
-                            socket.emit("status", {"message": "STOP"});
-                        }
-                    }
-                    else if(sortedList[i].leftNeighbor !== 0 && sortedList[i].rightNeighbor === 0){
-                        var xI = Math.round(sortedList[i].xPosition);
-                        var yI = Math.round(sortedList[i].yPosition);
-                        var xJ = Math.round(sortedList[i-1].xPosition);
-                        var yJ = Math.round(sortedList[i-1].yPosition);
-                        if(Math.abs(xI-xJ) < 15){
-                            console.log("collision on left: "+Math.abs(xI-xJ));
-                            document.getElementById("pause").click();
-                            socket.emit("status", {"message": "STOP"});
-                        }
-                    }else if(sortedList[i].leftNeighbor !== 0 && sortedList[i].rightNeighbor !== 0){
-                        var currentX = Math.round(sortedList[i].xPosition);
-                        var currentY = Math.round(sortedList[i].yPosition);
-                        var xI = Math.round(sortedList[i+1].xPosition);
-                        var yI = Math.round(sortedList[i+1].yPosition);
-                        var xJ = Math.round(sortedList[i-1].xPosition);
-                        var yJ = Math.round(sortedList[i-1].yPosition);
-                        if(Math.abs(xI-currentX) < 10 || Math.abs(xJ-currentX) < 10){
-                            Math.abs(xI-currentX) < 10 ? console.log("collision: right : "+Math.abs(xI-currentX)) : console.log("collision: right : "+Math.abs(xJ-currentX)) ;
-                            document.getElementById("pause").click();
-                            socket.emit("status", {"message": "STOP"});
-                        }
-                    }
-                }
-        }
-    }
+            listTemp.push({ "name":name, "color":color, "angle": angle, "mass": mass, "length": length, "point": point_start });
 
-    function mousePressed() {
-        for(var i = 0; i<pendulum_array.length; i++){
-            pendulum_array[i].clicked(mouseX,mouseY);
-        }
-    }
+            socket.emit('fromClient', listTemp);
+            console.log( 'EMIT: fromClient');
+            document.getElementById("pendulum_form").reset();
 
-    function mouseReleased() {
-        for(var i = 0; i<pendulum_array.length; i++){
-            pendulum_array[i].stopDragging();
-        }
-    }
+            document.getElementById("list_size").value = listTemp.length;
+            list = listTemp;
 
-    document.getElementById('submit_form').onclick = function(){
-        document.getElementById('pendulum_view').style.display = "block";
-        
-        var name = document.getElementById('name').value;
-        var color = document.getElementById('color').value;
-        var angle = document.getElementById('angular_setoff').value;
-        var mass = document.getElementById('mass').value;
-        var length = document.getElementById('length').value;
-        var point_start = document.getElementById('point').value;
+            if (list.length > 1){
+                document.getElementById('header_text').innerHTML = "List of Pendulums:"
+            }
+            document.getElementById('total_pendulum').innerHTML = "(Total number of pendulum: "+list.length+")";
+            
 
-        listTemp.push({ "name":name, "color":color, "angle": angle, "mass": mass, "length": length, "point": point_start });
-
-        socket.emit('fromClient', listTemp);
-        console.log( 'EMIT: fromClient');
-        document.getElementById("pendulum_form").reset();
-
-        document.getElementById("list_size").value = listTemp.length;
-        list = listTemp;
-
-        if (list.length > 1){
-            document.getElementById('header_text').innerHTML = "List of Pendulums:"
-        }
-        document.getElementById('total_pendulum').innerHTML = "(Total number of pendulum: "+list.length+")";
-        
-
-        document.getElementById("cooridiates").innerHTML = "";
+            document.getElementById("cooridiates").innerHTML = "";
             for(var i = 0; i<list.length; i++){
-                appendListItem(`Name: ${list[i].name}, Starting Point: ${list[i].point}`);
+                appendListItem(`Name: ${list[i].name}, Starting Point: ${list[i].point}, Length: ${list[i].length}`);
             }
             setup();
         }
 
-    document.getElementById("pause").onclick = function(){
-        // console.log("Pause button clicked");
-        noLoop();
-    }
 
-    document.getElementById("stop").onclick = function(){
-        // console.log("Stop button clicked");
-        noLoop();
-    }
 
-    document.getElementById("start").onclick = function(){
-        // console.log("Start button clicked");
-        loop();
-    }
+        document.getElementById("pause").onclick = function(){
+            // console.log("Pause button clicked");
+            noLoop();
+        }
+
+        document.getElementById("stop").onclick = function(){
+            // console.log("Stop button clicked");
+            noLoop();
+        }
+
+        document.getElementById("start").onclick = function(){
+            // console.log("Start button clicked");
+            loop();
+        }
 
     </script>
+  </body>
+  <script>
+        </script>
 </html>
