@@ -1,6 +1,8 @@
 const { readFileSync } = require("fs");
 const { createServer } = require("http");
+const http = require('http');
 const { Server } = require("socket.io");
+var socketIO = require("socket.io");
 var path = require('path');
 
 var express = require('express');
@@ -12,33 +14,17 @@ app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 app.set('view engine', 'ejs');
 
-// app.get('/', function(req, res) {
-//     res.sendFile(path.join(__dirname + '/client/index.html'));
-// });
-
-// app.use(express.static(__dirname + '/public'));
+app.use('/public', express.static(__dirname + '/public'));
 
 var  pendulumnList = [];
-const httpServer = createServer((req, res) => {
-  if (req.url !== "/") {
-    res.writeHead(404);
-    res.end("Not found");
-    return;
-  }
-  // reload the file every time
-  const content = readFileSync("index.html");
-  const length = Buffer.byteLength(content);
+app.get("/", function(req, res){
+    res.sendFile(path.join(__dirname+"/index.html"));
+})
 
-  res.writeHead(200, {
-    "Content-Type": "text/html",
-    "Content-Length": length,
-  });
-  res.end(content);
-});
+var server = http.Server(app);
+server.listen(3000);
 
-const io = new Server(httpServer, {
-  // Socket.IO options
-});
+const io = socketIO(server);
 
 io.on("connection", (socket) => {
     console.log(`connect ${socket.id}`);
@@ -109,6 +95,5 @@ io.on("connection", (socket) => {
     }
 });
 
-httpServer.listen(3000);
 
 
