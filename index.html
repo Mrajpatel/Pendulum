@@ -62,8 +62,13 @@
             display(c){
                 let co = color(c);
                 fill(co);
-                line(this.origin.x,this.origin.y,this.bob.x,this.bob.y)
-                ellipse(this.bob.x,this.bob.y,this.size,this.size)
+                stroke(co);
+                strokeWeight(3);
+                line(this.origin.x,this.origin.y,this.bob.x,this.bob.y);
+                ellipse(this.bob.x,this.bob.y,this.size,this.size);
+                stroke(51);
+                strokeWeight(5);
+                line(100,50,window.innerWidth-100,50);
                 return this.point;
             }
 
@@ -125,7 +130,7 @@
             <div class="form-group">
                 <label for="point">Pendulum Point:</label>
                 <div class="range">
-                    <input required name="point" type="range" value="500" class="form-range" id="point" min="100" max="1000" oninput="this.nextElementSibling.value = this.value"/>
+                    <input required name="point" type="range" value="500" class="form-range" id="point" min="100" max="1300" oninput="this.nextElementSibling.value = this.value"/>
                     <output>500</output>
                 </div>
               </div>
@@ -238,9 +243,13 @@
 
     function setup() {
         createCanvas(window.innerWidth, 700);
+        // strokeWeight(4);
+        // stroke(51);
+        // rect(20, 20, 60, 60);
+
         for(var i = 0; i < list.length; i++){
             point_start = parseInt(list[i].point);
-            pendulum_array[i] = new Pendulum(point_start,0,list[i].length,list[i].mass,parseInt(list[i].angle));
+            pendulum_array[i] = new Pendulum(point_start,50,list[i].length,list[i].mass,parseInt(list[i].angle));
         }
         console.log(pendulum_array);
     }
