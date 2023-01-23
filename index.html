@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pendulum Assessment</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <!-- <script type="text/javascript" src="/public/test.js"></script> -->
+
+    <script>
+        // Pendulumn class
+        class Pendulum{
+            constructor(x,y,len,r,a){
+                this.origin = createVector(x,y)
+                this.point = x;
+                this.bob = createVector(0,0)
+                this.len = len
+                this.size = r
+                // PI/4 = 45 PI/3 = 60 PI/2 = 90 
+                var receivedAngle = a;
+                if(Math.abs(receivedAngle) == 0){
+                    receivedAngle = 1
+                }
+                this.angle = PI/receivedAngle
+                // this.angle = PI/2 //-Math.abs(a)
+                this.Acc = 0
+                this.aVel = 0
+                this.dragging = false
+            }
+
+
+            /**
+             * Calculates next position of pendulumn based on angle
+             * Uses downwords velocity to determine gravity
+             * 
+             * @retruns {array} - containing x and y coordinates of the pendulumn
+             */
+            update(){
+                this.bob.x = this.origin.x + this.len * sin(this.angle)
+                this.bob.y = this.origin.y + this.len * cos(this.angle)
+                this.angle+=0.02
+                this.aAcc = -(0.8/this.len) * sin(this.angle)
+                // this.angle += this.aVel
+                this.aVel += this.aAcc
+                // Apply downwords velocity force (gravity)
+                this.aVel *=0.99 
+                this.angle += this.aVel
+                
+                return [this.bob.x, this.bob.y];
+            }
+
+            /**
+             * Display pendulumn based on string length and mass (radius)
+             * 
+             * @param {string} c - color of the pendulumn
+             * @retruns {number} - index point of a pendulumn
+             */
+            display(c){
+                let co = color(c);
+                fill(co);
+                line(this.origin.x,this.origin.y,this.bob.x,this.bob.y)
+                ellipse(this.bob.x,this.bob.y,this.size,this.size)
+                return this.point;
+            }
+
+            // Function to check if pendulumn is clicked
+            clicked(mx,my) {
+                let d = dist(mx, my, this.bob.x, this.bob.y);
+                if (d < this.size) {
+                    this.dragging = true;
+                }
+            }
+
+            // This tells us we are not longer clicking on the ball
+            stopDragging() {
+                if (this.dragging) {
+                    this.aVel = 0; // No velocity once you let go
+                    this.dragging = false;
+                }
+            }
+            
+            drag() {
+                // If we are draging the ball, we calculate the angle between the 
+                // pendulum origin and mouse position
+                // we assign that angle to the pendulum
+                if (this.dragging) {
+                    // Difference between 2 points
+                    let mouseV = createVector(mouseX, mouseY)
+                    let diff = createVector(0,0)
+            
+                    diff.x = this.origin.x - mouseV.x
+                    diff.y = this.origin.y - mouseV.y  
+                    // Angle relative to vertical axis
+                    this.angle = atan2(-1*diff.y, diff.x) - PI/2;  
+                }
+            }
+        }
+    </script>
+    <meta charset="utf-8" />
+  </head>
+
+  <body>
+    <h2>Status: <span id="status">Disconnected</span></h2>
+    <div hidden>
+        <h2>Messages:</h2>
+        <button id="test">Test</button>
+        <ul id="messages"></ul>
+    </div>
+    <div class="jumbotron text-center">
+        <h1>Pendulum</h1>
+        <p>(Insert Pendulum attributes)</p>
+    </div>
+      
+    <div class="container">
+        <form id="pendulum_form" onsubmit="return false;" >
+            <div class="form-group">
+                <label for="name">Pendulum Name and Color:</label>
+                <input style="width: 50%;"value="Test_1" name="name" type="text" id="name" required/>
+                <input type="color" name="color" id="color" value="#9d4343" />
+            </div>
+            <div class="form-group">
+                <label for="point">Pendulum Point:</label>
+                <div class="range">
+                    <input required name="point" type="range" value="500" class="form-range" id="point" min="100" max="1000" oninput="this.nextElementSibling.value = this.value"/>
+                    <output>500</output>
+                </div>
+              </div>
+            <div class="form-group">
+              <label for="angular_setoff">Angle of OffSet:</label>
+              <input required name="angular_setoff" type="number" id="angular_setoff" class="form-control" value="45" max="90" min="-90"/>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="mass">Mass:</label>
+                <div class="range">
+                    <input required name="mass" type="range" value="50" class="form-range" id="mass" min="10" max="100" oninput="this.nextElementSibling.value = this.value"/>
+                    <output>50</output>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="length">Length:</label>
+                <div class="range">
+                    <input required name="length" type="range" value="250" class="form-range" id="length" min="100" max="500" oninput="this.nextElementSibling.value = this.value"/>
+                    <output>250</output>
+                </div>
+            </div>
+            
+            <button id="submit_form" type="submit" class="btn btn-primary">Submit</button>
+            <br><br>
+            <input id="list_size" onChange="() => {console.log('list size changed')}" />
+
+            <div class="jumbotron text-left" id="pendulum_view" style="display: none;">
+                <h2 id="header_text">List of Pendulum:</h2>
+                <p id="total_pendulum"></p>
+                <ul id="cooridiates"></ul>
+
+                <div>
+                    <button id="stop" type="button" class="btn btn-sm btn-danger">
+                        STOP
+                    </button>
+                    <button id="pause" type="button" class="btn btn-sm btn-info">PASUE</button>
+                    <button id="start" type="button" class="btn btn-sm btn-success">START</button>
+                </div>
+            </div>
+
+            
+        </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const status = document.getElementById("status");
+        const messages = document.getElementById("messages");
+        const cooridiates = document.getElementById("cooridiates");
+
+        const appendMessage = (content) => {
+            const item = document.createElement("li");
+            item.textContent = content;
+            messages.appendChild(item);
+        };
+
+        const appendListItem = (content) => {
+            const item = document.createElement("li");
+            item.textContent = content;
+            cooridiates.appendChild(item);
+        };
+
+        const socket = io({
+            // Socket.IO options
+        });
+
+        socket.on("connect", () => {
+            status.innerText = "Connected";
+            console.log( 'ON: fromServer');
+            appendMessage(`event: connect | session id: ${socket.id}`);
+        });
+
+        socket.on("connect_error", (err) => {
+            appendMessage(`event: connect_error | reason: ${err.message}`);
+        });
+
+        socket.on("disconnect", (reason) => {
+            status.innerText = "Disconnected";
+            appendMessage(`event: disconnect | reason: ${reason}`);
+        });
+
+        socket.onAny((event, ...args) => {});
+
+        setInterval(function(){
+            if(listTemp.length > 0){
+                setInterval(function(){
+                    socket.emit('fromClient', listTemp); 
+                }, 1000);
+            }   
+        }, 1000);
+
+        socket.on("status", (status) => {
+            console.log(status);
+            if(status.message === "RESTART"){
+                setup();
+                document.getElementById("start").click();
+            }
+        });
+    </script>
+  </body>
+  <script>
+    var pendulum_array = [];
+    var list = [];
+    var listTemp = [];
+    
+    var sortedList = [];
+    socket.onAny((event, ...args) => {
+        sortedList = args[0];
+    });
+
+    function setup() {
+        createCanvas(window.innerWidth, 700);
+        for(var i = 0; i < list.length; i++){
+            point_start = parseInt(list[i].point);
+            pendulum_array[i] = new Pendulum(point_start,0,list[i].length,list[i].mass,parseInt(list[i].angle));
+        }
+        console.log(pendulum_array);
+    }
+
+    function draw(){
+        background(225);
+        var position_array = [];
+        for(var i = 0; i<pendulum_array.length; i++){
+            var temp_point = pendulum_array[i].display(list[i].color);
+            pendulum_array[i].drag();
+            var position = pendulum_array[i].update();
+            position_array.push(position);
+            // var temp_point = pendulum_array[i].point();
+            for(var j = 0; j < sortedList.length; j++){
+                if(sortedList[j].point == temp_point){
+                    sortedList[j].xPosition = parseInt(position[0])+parseInt(sortedList[j].mass);
+                    sortedList[j].yPosition = parseInt(position[1])+parseInt(sortedList[j].mass);
+                }
+            }   
+        }
+        // console.log(sortedList);
+
+        if(sortedList.length>1){
+            loop1:
+                for(var i =0;i<sortedList.length;i++){
+                    if(sortedList[i].rightNeighbor !== 0 && sortedList[i].leftNeighbor === 0){
+                        // console.log(sortedList[i].rightNeighbor);
+                        var xI = Math.round(sortedList[i].xPosition);
+                        var yI = Math.round(sortedList[i].yPosition);
+                        var xJ = Math.round(sortedList[i+1].xPosition);
+                        var yJ = Math.round(sortedList[i+1].yPosition);
+                        if(Math.abs(xI-xJ) < 17){
+                            console.log("collision on right: "+Math.abs(xI-xJ));
+                            document.getElementById("pause").click();
+                            socket.emit("status", {"message": "STOP"});
+                        }
+                    }
+                    else if(sortedList[i].leftNeighbor !== 0 && sortedList[i].rightNeighbor === 0){
+                        var xI = Math.round(sortedList[i].xPosition);
+                        var yI = Math.round(sortedList[i].yPosition);
+                        var xJ = Math.round(sortedList[i-1].xPosition);
+                        var yJ = Math.round(sortedList[i-1].yPosition);
+                        if(Math.abs(xI-xJ) < 15){
+                            console.log("collision on left: "+Math.abs(xI-xJ));
+                            document.getElementById("pause").click();
+                            socket.emit("status", {"message": "STOP"});
+                        }
+                    }else if(sortedList[i].leftNeighbor !== 0 && sortedList[i].rightNeighbor !== 0){
+                        var currentX = Math.round(sortedList[i].xPosition);
+                        var currentY = Math.round(sortedList[i].yPosition);
+                        var xI = Math.round(sortedList[i+1].xPosition);
+                        var yI = Math.round(sortedList[i+1].yPosition);
+                        var xJ = Math.round(sortedList[i-1].xPosition);
+                        var yJ = Math.round(sortedList[i-1].yPosition);
+                        if(Math.abs(xI-currentX) < 10 || Math.abs(xJ-currentX) < 10){
+                            Math.abs(xI-currentX) < 10 ? console.log("collision: right : "+Math.abs(xI-currentX)) : console.log("collision: right : "+Math.abs(xJ-currentX)) ;
+                            document.getElementById("pause").click();
+                            socket.emit("status", {"message": "STOP"});
+                        }
+                    }
+                }
+        }
+    }
+
+    function mousePressed() {
+        for(var i = 0; i<pendulum_array.length; i++){
+            pendulum_array[i].clicked(mouseX,mouseY);
+        }
+    }
+
+    function mouseReleased() {
+        for(var i = 0; i<pendulum_array.length; i++){
+            pendulum_array[i].stopDragging();
+        }
+    }
+
+    document.getElementById('submit_form').onclick = function(){
+        document.getElementById('pendulum_view').style.display = "block";
+        
+        var name = document.getElementById('name').value;
+        var color = document.getElementById('color').value;
+        var angle = document.getElementById('angular_setoff').value;
+        var mass = document.getElementById('mass').value;
+        var length = document.getElementById('length').value;
+        var point_start = document.getElementById('point').value;
+
+        listTemp.push({ "name":name, "color":color, "angle": angle, "mass": mass, "length": length, "point": point_start });
+
+        socket.emit('fromClient', listTemp);
+        console.log( 'EMIT: fromClient');
+        document.getElementById("pendulum_form").reset();
+
+        document.getElementById("list_size").value = listTemp.length;
+        list = listTemp;
+
+        if (list.length > 1){
+            document.getElementById('header_text').innerHTML = "List of Pendulums:"
+        }
+        document.getElementById('total_pendulum').innerHTML = "(Total number of pendulum: "+list.length+")";
+        
+
+        document.getElementById("cooridiates").innerHTML = "";
+            for(var i = 0; i<list.length; i++){
+                appendListItem(`Name: ${list[i].name}, Starting Point: ${list[i].point}`);
+            }
+            setup();
+        }
+
+    document.getElementById("pause").onclick = function(){
+        // console.log("Pause button clicked");
+        noLoop();
+    }
+
+    document.getElementById("stop").onclick = function(){
+        // console.log("Stop button clicked");
+        noLoop();
+    }
+
+    document.getElementById("start").onclick = function(){
+        // console.log("Start button clicked");
+        loop();
+    }
+
+    </script>
+</html>
