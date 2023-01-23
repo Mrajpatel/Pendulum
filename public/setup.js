@@ -38,16 +38,32 @@ function draw(){
                     var xJ = Math.round(sortedList[i+1].xPosition);
                     var yJ = Math.round(sortedList[i+1].yPosition);
                     var massJ = parseInt(sortedList[i+1].mass);
-                    // if(Math.abs(xI-xJ) < 17){
-                    var heightDifference = Math.abs((parseInt(sortedList[i].length))-(parseInt(sortedList[i+1].length)));
-                    var pointDifference = Math.abs(dist(xI, yI, xJ, yJ));
+                    
+                    var shortPendulumnIndex = i;
+                    var small = "i";
+                    if(yI < yJ){
+                        shortPendulumnIndex = i;
+                        small = "i";
+                    }else if(yI > yJ){
+                        shortPendulumnIndex = i+1;
+                        small = "j";
+                    }else{
+                        shortPendulumnIndex = i+1;
+                        small = "nan";
+                    }
 
-                    var yCoordinate = sortedList[i].yPosition > sortedList[i+1].yPosition ? sortedList[i+1].yPosition : sortedList[i].yPosition
-                    console.log(xI+"-"+xJ);
+                    if(small === "i"){
+                        xI = xI-massI;
+                    }else if(small === "j"){
+                        xJ = xJ+massJ;
+                    }else{
+                        xI = xI-massI;
+                        xJ = xJ+massJ;
+                    }
                     var minHeight = Math.min(yI, yJ);
-                    console.log(yI+"-"+yJ+"("+minHeight+"): "+Math.abs(yI-yJ));
-                    // console.log("T:"+dist(xI, yI, xJ, yJ));
-                    if(dist(xI, yI, xJ, yJ) < 80){
+                    // console.log("D:"+dist(xI, minHeight, xJ, minHeight));
+                    if(dist(xI, minHeight, xJ, minHeight) < 12){
+                    // if(Math.abs(xI-xJ) < 10){
                         console.log(dist(xI, yI, xJ, yJ));
                         console.log("collision on right: "+Math.abs(xI-xJ));
                         document.getElementById("pause").click();
@@ -73,7 +89,7 @@ function draw(){
                     var xJ = Math.round(sortedList[i-1].xPosition);
                     var yJ = Math.round(sortedList[i-1].yPosition);
 
-                    if(dist(xI, yI, currentX, currentY) < 80 || dist(xJ, yJ, currentX, currentY) < 10){
+                    if(dist(xI, yI, currentX, currentY) < 80 || dist(xJ, yJ, currentX, currentY) < 80){
                         dist(xI, yI, currentX, currentY) < 80 ? console.log("collision-T: right : "+dist(xI, yI, currentX, currentY)) : console.log("collision: right : "+dist(xJ, yJ, currentX, currentY));
                         document.getElementById("pause").click();
                         socket.emit("status", {"message": "STOP"});
