@@ -7,7 +7,7 @@
    to install required node modules
 3. Run `node index.js` in the terminal to start the server
 4. Open browser and redirect to `http://localhost:3000` to see the project in action
-33
+
 
 ## Walkthrough
 1. Once the project is running on `http://localhost:3000`, insert pendulum attributes <br>
