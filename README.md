@@ -29,7 +29,7 @@
     
     <b>Stop:</b> Will stop all the pendulum that are running <br>
     <b>Pause:</b> Will pause the pendulum that are running <br>
-    <b>Start:</b> Will pause the pendulum that are running <br>
+    <b>Start:</b> Will unpause the running pendulums and restart the stopped pendulums <br>
   
  3. In Canvas the running pendulum is displayed
     ![image](https://user-images.githubusercontent.com/34627097/214359822-f6fcaba7-c71e-4c67-ad7c-724fe50eb154.png)
