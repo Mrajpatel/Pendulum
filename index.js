@@ -1,3 +1,4 @@
+// required modules
 const { readFileSync } = require("fs");
 const { createServer } = require("http");
 const http = require('http');
@@ -14,9 +15,9 @@ app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 app.set('view engine', 'ejs');
 
+// setting route
 app.use('/public', express.static(__dirname + '/public'));
 
-var  pendulumnList = [];
 app.get("/", function(req, res){
     res.sendFile(path.join(__dirname+"/index.html"));
 })
@@ -25,10 +26,13 @@ var server = http.Server(app);
 server.listen(3000);
 
 const io = socketIO(server);
+var  pendulumnList = [];
 
+// on socket connection
 io.on("connection", (socket) => {
     console.log(`connect ${socket.id}`);
 
+    // Channel 'status' to send ('Restart') and receive ('Stop') message to/from the client 
     socket.on('status', function(data){
         console.log(data);
         if(data.message === "STOP"){
@@ -40,6 +44,8 @@ io.on("connection", (socket) => {
             }
         }
     });
+
+    // Channel 'fromClient' for getting the pendulum data in json format and store it in an array
     socket.on('fromClient',function(data){
    
         // console.log( 'ON: fromClient');
@@ -50,7 +56,7 @@ io.on("connection", (socket) => {
         // console.log( 'EMIT: fromServers');
         pendulumnList.sort(dynamicSort("point"));
 
-        // sorting based on x-point position
+        // sorting based on x-axis point position
         if(pendulumnList.length == 1){
             pendulumnList[0].leftNeighbor = 0;
             pendulumnList[0].rightNeighbor = 0;
@@ -68,17 +74,20 @@ io.on("connection", (socket) => {
                 }
             }
         }
+
+        // send the sorted array back to the client
         if(pendulumnList.length > 0){
             socket.emit('pendulumnList', pendulumnList);
-            // console.log(pendulumnList);
         }
         // console.log(pendulumnList);
     });
 
+    // On 'disconnect' log the message along with reason of disconnection
     socket.on("disconnect", (reason) => {
         console.log(`disconnect ${socket.id} due to ${reason}`);
     });
 
+    // sorting function 
     function dynamicSort(property) {
         var sortOrder = 1;
         if(property[0] === "-") {
