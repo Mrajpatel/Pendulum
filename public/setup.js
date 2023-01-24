@@ -1,3 +1,9 @@
+/**
+ *  Setup Canvas for pendulumn animation 
+ *  Read data from pendulum_array and create Pendulums objects using the Pendulum Class
+ * 
+ *  dump/log resulting object array in browser console
+ */
 function setup() {
     createCanvas(window.innerWidth, 700);
 
@@ -8,6 +14,11 @@ function setup() {
     console.log(pendulum_array);
 }
 
+/**
+ *  Function gets called by p5 script repeatedly to resulting in a moving pendulum
+ *  Also detacts colision based on the neighbour's coordinates 
+ * 
+ */
 function draw(){
     background(225);
     var position_array = [];
@@ -100,12 +111,18 @@ function draw(){
     }
 }
 
+/**
+ *  mousePressed function to check if object/pendulum is clicked on for drag and drop task
+ */
 function mousePressed() {
     for(var i = 0; i<pendulum_array.length; i++){
         pendulum_array[i].clicked(mouseX,mouseY);
     }
 }
 
+/**
+ *  mouseReleased function to check if object/pendulum is released
+ */
 function mouseReleased() {
     for(var i = 0; i<pendulum_array.length; i++){
         pendulum_array[i].stopDragging();
