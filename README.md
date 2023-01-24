@@ -37,7 +37,7 @@
  5. Multiple Pendulum can be inserted following the process in step 1
     ![image](https://user-images.githubusercontent.com/34627097/214361680-35624955-8027-4fca-90d1-261988e0ff98.png)
 
- 6. Collision: When 2 pendulum are at a collision distance or did collide they will stop running and a "STOP" message will be sent to the index.js server and after 5 second when server sends "RESTART" message to the client (index.html) then the pendulum will start running from their original postion (starting point) <br>
+ 6. Collision: When 2 pendulum are at a collision distance or did collide they will stop running and a "STOP" message will be sent to the index.js server (on a "Status" socket channel) and after 5 second when server sends "RESTART" message to the client (on the same "Status" socket channel) instructing pendulums to start running from their original postion (starting point) <br>
  ![image](https://user-images.githubusercontent.com/34627097/214360879-8cb5f7ea-f731-459f-8d44-e2c03b963b83.png)
 
 
