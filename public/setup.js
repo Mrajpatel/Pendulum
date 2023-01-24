@@ -16,7 +16,6 @@ function draw(){
         pendulum_array[i].drag();
         var position = pendulum_array[i].update();
         position_array.push(position);
-        // var temp_point = pendulum_array[i].point();
         for(var j = 0; j < sortedList.length; j++){
             if(sortedList[j].point == temp_point){
                 // sortedList[j].xPosition = parseInt(position[0])+parseInt(sortedList[j].mass);
@@ -61,9 +60,11 @@ function draw(){
                         xJ = xJ+massJ;
                     }
                     var minHeight = Math.min(yI, yJ);
+                    var distance = Math.abs(parseInt(sortedList[i].point)-parseInt(sortedList[i+1].point));
+                    // console.log("D:"+xI+"-"+ minHeight+"-"+  xJ+"-"+  minHeight+"-"+yI+"-"+ yJ);
                     // console.log("D:"+dist(xI, minHeight, xJ, minHeight));
                     if(dist(xI, minHeight, xJ, minHeight) < 12){
-                    // if(Math.abs(xI-xJ) < 10){
+                    // if(Math.abs(xI-xJ) < 20){
                         console.log(dist(xI, yI, xJ, yJ));
                         console.log("collision on right: "+Math.abs(xI-xJ));
                         document.getElementById("pause").click();
@@ -75,7 +76,7 @@ function draw(){
                     var yI = Math.round(sortedList[i].yPosition);
                     var xJ = Math.round(sortedList[i-1].xPosition);
                     var yJ = Math.round(sortedList[i-1].yPosition);
-                    
+                    var distance = Math.abs(parseInt(sortedList[i].point)-parseInt(sortedList[i-1].point));
                     if(dist(xI, yI, xJ, yJ) < 80){
                         console.log("collision on left: "+Math.abs(xI-xJ));
                         document.getElementById("pause").click();
