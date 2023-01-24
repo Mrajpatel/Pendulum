@@ -16,7 +16,7 @@
   </head>
 
   <body>
-    <h2>Status: <span id="status">Disconnected</span></h2>
+    <h2 hidden>Status: <span id="status">Disconnected</span></h2>
     <div hidden>
         <h2>Messages:</h2>
         <button id="test">Test</button>
@@ -31,7 +31,7 @@
         <form id="pendulum_form" onsubmit="return false;" >
             <div class="form-group">
                 <label for="name">Pendulum Name and Color:</label>
-                <input style="width: 50%;"value="Test_1" name="name" type="text" id="name" required/>
+                <input style="width: 50%;" value="" placeholder="Insert pendulum name/identifier" name="name" type="text" id="name" required/>
                 <input type="color" name="color" id="color" value="#9d4343" />
             </div>
             <div class="form-group">
@@ -84,21 +84,29 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        /**
+         * Script makes socket connection
+         * connects to open channel on socket.io to print/manupulate data returned from setup.js and pendulum.js
+         * 
+        */
         var pendulum_array = [];
         var list = [];
         var listTemp = [];
         var sortedList = [];
+        var checkStop = false;
 
         const status = document.getElementById("status");
         const messages = document.getElementById("messages");
         const cooridiates = document.getElementById("cooridiates");
 
+        // Print connection message in the headed
         const appendMessage = (content) => {
             const item = document.createElement("li");
             item.textContent = content;
             messages.appendChild(item);
         };
 
+        // Print existing pendulum in list format
         const appendListItem = (content) => {
             const item = document.createElement("li");
             item.textContent = content;
@@ -126,6 +134,7 @@
 
         socket.onAny((event, ...args) => {});
 
+        // updates pendulum list everytime an updated list is sent on 'fromClient' channel
         setInterval(function(){
             if(listTemp.length > 0){
                 setInterval(function(){
@@ -134,6 +143,7 @@
             }   
         }, 1000);
 
+        // starts pendulum from starting point once "Restart" message is received from server
         socket.on("status", (status) => {
             console.log(status);
             if(status.message === "RESTART"){
@@ -142,11 +152,13 @@
             }
         });
 
-
+        // gets sorted list from the open channel every second 
         socket.onAny((event, ...args) => {
             sortedList = args[0];
         });
 
+        // when form is summited take the data and send it backed on open channel 
+        // and start the pendulum animation
         document.getElementById('submit_form').onclick = function(){
             document.getElementById('pendulum_view').style.display = "block";
             
@@ -179,21 +191,31 @@
             setup();
         }
 
-
-
+        // Pause button
         document.getElementById("pause").onclick = function(){
             // console.log("Pause button clicked");
+            checkStop = false;
             noLoop();
         }
 
+        // Stop button
         document.getElementById("stop").onclick = function(){
             // console.log("Stop button clicked");
+            checkStop = true;
             noLoop();
         }
 
+        // Start button
         document.getElementById("start").onclick = function(){
             // console.log("Start button clicked");
-            loop();
+            if(checkStop){
+                checkStop = false;
+                // set the animation back to starting point and restart it
+                setup(); 
+                document.getElementById("start").click();
+            }else{
+                loop();
+            }
         }
 
     </script>
